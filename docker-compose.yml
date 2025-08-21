@@ -13,7 +13,7 @@ services:
       # and the path to the right of the colon is where the data is
       # available to ABS in Docker.
       # You can change these media directories or add as many as you want
-      - ./audibooks:/audiobooks
+      - ./audiobooks:/audiobooks
       - ./podcasts:/podcasts
       - ./metadata:/metadata
       # The config directory needs to be on the same physical machine
