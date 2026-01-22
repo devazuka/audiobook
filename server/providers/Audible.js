@@ -3,7 +3,7 @@ const Logger = require('../Logger')
 const { isValidASIN } = require('../utils/index')
 
 class Audible {
-  #responseTimeout = 30000
+  #responseTimeout = 10000
 
   constructor() {
     this.regionMap = {
@@ -57,8 +57,13 @@ class Audible {
       })
     }
 
-    const genresFiltered = genres ? genres.filter((g) => g.type == 'genre').map((g) => g.name) : []
-    const tagsFiltered = genres ? genres.filter((g) => g.type == 'tag').map((g) => g.name) : []
+    let genresCleaned = []
+    let tagsCleaned = []
+
+    if (genres && Array.isArray(genres)) {
+      genresCleaned = [...new Set(genres.filter((g) => g.type == 'genre').map((g) => g.name))]
+      tagsCleaned = [...new Set(genres.filter((g) => g.type == 'tag').map((g) => g.name))]
+    }
 
     return {
       title,
@@ -71,8 +76,8 @@ class Audible {
       cover: image,
       asin,
       isbn,
-      genres: genresFiltered.length ? genresFiltered : null,
-      tags: tagsFiltered.length ? tagsFiltered.join(', ') : null,
+      genres: genresCleaned.length ? genresCleaned : null,
+      tags: tagsCleaned.length ? tagsCleaned : null,
       series: series.length ? series : null,
       language: language ? language.charAt(0).toUpperCase() + language.slice(1) : null,
       duration: runtimeLengthMin && !isNaN(runtimeLengthMin) ? Number(runtimeLengthMin) : 0,
@@ -106,7 +111,7 @@ class Audible {
         return res.data
       })
       .catch((error) => {
-        Logger.error('[Audible] ASIN search error', error)
+        Logger.error('[Audible] ASIN search error', error.message)
         return null
       })
   }
@@ -158,7 +163,7 @@ class Audible {
           return Promise.all(res.data.products.map((result) => this.asinSearch(result.asin, region, timeout)))
         })
         .catch((error) => {
-          Logger.error('[Audible] query search error', error)
+          Logger.error('[Audible] query search error', error.message)
           return []
         })
     }
